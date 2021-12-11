@@ -1,0 +1,43 @@
+{{- range $name, $params := .Values.cronjobs }}
+---
+apiVersion: batch/v1beta1
+kind: CronJob
+metadata:
+  namespace: {{ $.Values.namespace }}
+  name: {{ $.Chart.Name }}-{{ $name }}
+
+  labels:
+    chart: "{{ $.Chart.Name }}-{{ $.Chart.Version | replace "+" "_" }}"
+spec:
+  schedule: {{ $params.schedule | quote }}
+  successfulJobsHistoryLimit: 1
+  failedJobsHistoryLimit: 1 
+  concurrencyPolicy: {{ $.Values.concurrencyPolicy }} 
+  jobTemplate:
+    spec:
+      template:
+        metadata:
+          labels:
+            app: {{ $.Chart.Name }} 
+        spec:
+        {{- with $.Values.imagePullSecrets }}
+          imagePullSecrets:
+          {{ toYaml . | indent 2 }}
+        {{- end}}
+          containers:
+
+          - name: {{ $.Chart.Name }}
+            image: "{{ $.Values.image.repository }}:{{ $.Values.image.tag }}"
+            imagePullPolicy: {{ $.Values.image.pullPolicy }} 
+            resources:
+              limits:
+                cpu: {{ $.Values.resources.limits.cpu }}
+                memory: {{ $.Values.resources.limits.memory }}
+              requests:
+                cpu: {{ $.Values.resources.requests.cpu }}
+                memory: {{ $.Values.resources.requests.memory }}             
+            envFrom:
+              - configMapRef:
+                  name: {{ $.Chart.Name }}-env
+          restartPolicy: {{ $.Values.restartPolicy }}    
+{{- end }}
