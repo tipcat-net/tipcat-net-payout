@@ -1,9 +1,8 @@
 using System.Threading.Tasks;
 
-namespace TipCatDotNet.Payout.Services.HttpClients
+namespace TipCatDotNet.Payout.Services.HttpClients;
+
+public interface IPayoutHttpClient
 {
-    public interface IPayoutHttpClient
-    {
-        Task Payout();
-    }
+    Task Payout();
 }
